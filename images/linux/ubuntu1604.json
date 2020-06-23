@@ -51,9 +51,26 @@
             "image_offer": "UbuntuServer",
             "image_sku": "16.04-LTS",
             "os_disk_size_gb": "86"
+        },
+        {
+          "type": "docker",
+          "image": "ubuntu:16.04",
+          "commit": true,
+          "privileged": true,
+          "volumes": {
+              "/var/run/docker.sock": "/var/run/docker.sock"
+          }
         }
     ],
     "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+							  "apt-get update",
+                "apt-get install sudo build-essential curl file git lsb-release wget snap -y"
+            ],
+            "execute_command": "sh -c '{{ .Vars }} {{ .Path }}'"
+        },
         {
             "type": "shell",
             "inline": [
@@ -149,6 +166,7 @@
         },
         {
             "type": "shell",
+            "only": ["azure-arm"],
             "expect_disconnect": true,
             "scripts": [
                 "{{template_dir}}/scripts/base/reboot.sh"
@@ -355,6 +373,7 @@
         },
         {
             "type": "shell",
+            "only": ["azure-arm"],
             "inline": [
                 "sleep 30",
                 "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
