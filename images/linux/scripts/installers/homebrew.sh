@@ -9,8 +9,20 @@ source $HELPER_SCRIPTS/document.sh
 source $HELPER_SCRIPTS/etc-environment.sh
 
 # Install the Homebrew on Linux
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+if [ "${UID}" == "0" ]; then
+  echo "You seem to be running this as root. Setting up the linuxbrew user..."
+  useradd -m -s /bin/bash linuxbrew \
+      && echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
+
+  git clone https://github.com/Homebrew/brew /home/linuxbrew/.linuxbrew/Homebrew
+  mkdir /home/linuxbrew/.linuxbrew/bin
+  ln -s /home/linuxbrew/.linuxbrew/Homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin
+  ln -s /home/linuxbrew/.linuxbrew/Homebrew/bin/brew /usr/local/bin
+  eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+else
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+  eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+fi
 
 # Make brew files and directories writable by any user
 sudo chmod -R o+w $HOMEBREW_PREFIX
